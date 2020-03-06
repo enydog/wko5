@@ -1,0 +1,32 @@
+@MBR:=if(gender="male",
+((10*(metric(weight)/2.2))+(6.25*metric(height))-(5*age)+5),
+((10 * metric(weight)) + (6.25 * metric(height)) - (5 * age) - 161
+)),
+@tcf:=tcadence*cranklength*pi/30000,
+@ftcf:=bikeftp/tcadence/pi/cranklength*30000, 
+
+@qindex:=(sum(if(cpv >= @tcf and aepf >= @ftcf, if(@ifrel>0.99,deltatime*4,deltatime*2), 0))+
+sum(if(cpv < @tcf and aepf >= @ftcf, if(@ifrel>0.99,deltatime*4*0.5,deltatime*3*.74), 0))+
+sum(if(cpv < @tcf and aepf < @ftcf, if(@ifrel>0.99,deltatime*4*0.44,deltatime*3*0.70), 0))+
+sum(if(cpv >= @tcf and aepf < @ftcf, if(@ifrel>0.99,deltatime*4*0.32,deltatime*3*0.65), 0))
+)/1000,
+
+
+@ifrel:=avg(power)/sFTP,
+@hs:=duration/3600,
+@Carbos:=if(sFTP<=200,(TSS * 8)/4,
+  if(sFTP<=240,(TSS * 9)/4,
+   if(sFTP<=270,(TSS * 12)/4,
+    if(sFTP<=300,(TSS * 13)/4,
+     if(sFTP<=330,(TSS * 14)/4,
+      if(sFTP<=360,(TSS * 15)/4,
+       if(sFTP<=390,(TSS * 16)/4,(TSS * 16)/4)
+)))))),
+@P:= if(@hs<1,0.7,
+              if(@hs<2,0.8,
+               if(@hs<2.5,0.9,1)
+              )),
+@Proteinas := @P*metric(weight)*2.2,
+@Total:= @MBR + (sFTP*@ifrel*3.6*@hs),
+@Carbosref:= @Carbos+if(@hs>2.5,@qindex,@qindex/3),
+(3,(@Total-(@Carbosref*4)-(@Proteinas*4))/9)"gr"
