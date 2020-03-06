@@ -1,0 +1,6 @@
+@hs := duration/3600,
+@Proteinas:= if(@hs<1,0.7,
+              if(@hs<2,0.8,
+               if(@hs<2.5,0.9,1)
+              )),
+(2,@Proteinas*metric(weight)*2.2)"gr"
