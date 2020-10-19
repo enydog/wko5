@@ -1,0 +1,47 @@
+
+def potenciaBruta()
+    @VO2_L_min  := 0.0108 * sftp + 0.007 * metric(weight), 
+    @cyclingEFF := sftp * (1/ (@VO2_L_min * 4.825 * 4184 * (1/60)))* 1, #Coggan formula
+    ewma(power / (@cyclingEFF) - power,30)
+
+def dewPointEstimation()
+    @dp:=avg(temperature)-Max(temperature)*0.3,
+
+
+def Tcore()
+    if(@cts=0,@cts:=36.5),
+    @al := 1.0,
+    @gamma := 18.88 * 18.88,
+    @b0:= -7887.1,
+    @b1:= 384.4286,
+    @b2:= -4.5714,
+    @sigma:= 18.88 * 18.88,
+
+    @x:=@cts,
+    @V:=0,
+    @x_pred := @al * @x,
+    @v_pred := (@al  * @al ) * (@v+@gamma),
+    @z      := heartrate,
+    @c_vc   := 2.0 *  @b2 * @x_pred + @b1,
+    @k      := (@v_pred * @c_vc)/((@c_vc*@c_vc) * @v_pred+@sigma),
+    @x      := @x_pred+@k * (@z-(@b2 * (@x_pred*@x_pred)+@b1 * @x_pred+@b0)),
+    @v      := (1-@k * @c_vc) * @v_pred,
+    @CTS    := @x,
+
+
+def supLimite
+    -1*((TCore + 0.5 ) * sqrt(height * weight/3600)  * 5.2)*@dewpointCoef
+
+def Disipada
+    @VO2_L_min  := 0.0108 * sftp + 0.007 * metric(weight), 
+    @cyclingEFF := sftp * (1/ (@VO2_L_min * 4.825 * 4184 * (1/60)))* 1,
+    @VentSpeed:=0,
+    @TasaSudorHora:=1,
+    @temp:=if(isValid(temperature),temperature,25),
+    @Humedad:=80/100,
+
+    ewma((power / (@cyclingEFF) - power) -
+    ((@TCore-@temp) * power(@VentSpeed,0.5) * sqrt(height * weight/3600)  * 8.3)-
+    (@TCore + 0.5 ) * sqrt(height * weight/3600)  * 5.2 -
+    (@TasaSudorHora * 625 * 0.2103 * Power(@Humedad,-1.879)),500)    
+
