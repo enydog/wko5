@@ -1,0 +1,84 @@
+"parametros manuales",
+@init:=(otherftp)/10,"si este valor es individual debe colocarlo en el perfil de cada ciclista como valor otherFTP",
+@init:=20.35,
+@coe:=4.7, 
+"@coe:=2.7,",
+@tim:=duration"s",
+"Colocar el reango de fechas para la MMP"
+@desde:=date-44,
+@hasta:=date,
+@peso:=metric(weight),
+
+
+@mmp5:=max(athleterange(@desde,@hasta,meanmax(power,5)))/@peso,
+@mmp30:=max(athleterange(@desde,@hasta,meanmax(power,30)))/@peso,
+@mmp60:=max(athleterange(@desde,@hasta,meanmax(power,60)))/@peso,
+@mmp2m:=max(athleterange(@desde,@hasta,meanmax(power,120)))/@peso,
+@mmp5m:=max(athleterange(@desde,@hasta,meanmax(power,300)))/@peso,
+@mmp10m:=max(athleterange(@desde,@hasta,meanmax(power,600)))/@peso,
+@mmp20m:=max(athleterange(@desde,@hasta,meanmax(power,1200)))/@peso,
+@mmp30m:=max(athleterange(@desde,@hasta,meanmax(power,1800)))/@peso,
+@mmp60m:=max(athleterange(@desde,@hasta,meanmax(power,3600)))/@peso,
+@mmp120m:=max(athleterange(@desde,@hasta,meanmax(power,7200)))/@peso,
+@mmp180m:=max(athleterange(@desde,@hasta,meanmax(power,10800)))/@peso,    
+@mmp240m:=max(athleterange(@desde,@hasta,meanmax(power,14400)))/@peso,
+
+@calc5   :=@mmp5*100/@init"W/kg",
+@calc30  :=@mmp30*@calc5/@mmp5"W/kg",
+@calc60  :=@mmp60*@calc30/@mmp30"W/kg",
+@calc2m  :=@mmp2m*@calc60/@mmp60"W/kg",
+@calc5m  :=@mmp5m*@calc2m/@mmp2m"W/kg",
+@calc10m :=@mmp10m*@calc5m/@mmp5m"W/kg",
+@calc20m :=@mmp20m*@calc10m/@mmp10m"W/kg",
+@calc30m :=@mmp30m*@calc20m/@mmp20m"W/kg",
+@calc60m :=@mmp60m*@calc30m/@mmp30m"W/kg",
+@calc120m:=@mmp120m*@calc60m/@mmp60m"W/kg",
+@calc180m:=@mmp180m*@calc120m/@mmp120m"W/kg",
+@calc240m:=@mmp240m*@calc180m/@mmp180m"W/kg",
+
+"rango de indice, uso el modulo por las dudas",
+@z11:=abs(@calc60m-@calc120m),
+@z12:=abs(@calc120m-@calc180m),
+@z13:=abs(@calc180m-@calc240m),
+@z21:=abs(@calc20m-@calc30m),
+@z22:=abs(@calc30m-@calc60m),
+@z31:=abs(@calc5m-@calc10m),
+@z32:=abs(@calc10m-@calc20m),
+@z41:=abs(@calc60-@calc2m),
+@Z42:=abs(@calc2m-@calc5m),
+@z51:=abs(@calc5-@calc30),
+@z52:=abs(@calc30-@calc60),
+@z61:=abs(100-@calc5),
+@z62:=abs(@calc5-@calc30),
+
+"promedios de indices",
+@z6cf:=(@z61+@z62)/2,
+@z5cf:=(@z51+@z52)/2,
+@z4cf:=(@z41+@z42)/2,
+@z3cf:=(@z31+@z32)/2,
+@z2cf:=(@z21+@z22)/2,
+@z1cf:=(@z11+@z12+@z13)/3,
+
+"zonas via MMP",
+@levels:=(
+ (
+  {@Z1VT1,@Z2MLSS,@Z3VT2,@Z4MAP,@Z5ANEXT,@Z6ANINT,@IGNORE},
+  bin(power,li(athleterange(@desde,@hasta,@mmp:=meanmax(power),{@mmp,((,xx(@mmp)[-1])+1,1),((,xx(@mmp)[-1])+14400,0)}),
+  {14400,7200,1800,600,120,10}))
+  ) )/sum(duration"bike"),
+
+"termino de calcular el ppi",  
+@pz1:=@levels[0],
+@pz2:=@levels[1],
+@pz3:=@levels[2],
+@pz4:=@levels[3],
+@pz5:=@levels[4],
+@pz6:=@levels[5],
+@ign:=@levels[6],
+@ppi:=(((@coe*@z1cf)*@pz1)+@tim+
+((@coe*@z2cf)*@pz2)+@tim+
+((@coe*@z3cf)*@pz3)+@tim+
+((@coe*@z4cf)*@pz4)+@tim+
+((@coe*@z5cf)*@pz5)+@tim+
+((@coe*@z6cf)*@pz6)+@tim+
+(@ign*@ign)+@tim)/100"ppi"
