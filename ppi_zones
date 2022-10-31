@@ -1,0 +1,20 @@
+"We have chosen 44 days, but it can be changed to 90 days."
+@desde:=date-44,
+@hasta:=date,
+(
+ (
+  {"Z1-VT1 2h MMP-4h MMP",
+   "Z2-MLSS 30min-2h MMP",
+   "Z3-VT2 10min-30min MMP",
+   "Z4-MAP 2min-10min MMP",
+   "Z5-AN EXT 2min-10s MMP",
+   "Z6-AN INT 10s-1s MMP",
+   "IGNORE add to Z1"},
+   
+   bin(power,li(athleterange(@desde,@hasta,@mmp:=meanmax(power),{@mmp,((,xx(@mmp)[-1])+1,1),((,xx(@mmp)[-1])+14400,0)}),
+   
+   {14400,7200,1800,600,120,10}))
+   
+   
+   )
+   )/sum(duration"bike")
